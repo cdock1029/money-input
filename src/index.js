@@ -6,55 +6,82 @@ import './styles.css'
 Dinero.globalLocale = 'en-US'
 
 class App extends React.Component {
-	state = {
-		digits: '0',
+	constructor(props) {
+		super(props)
+		this.state = {
+			whole: '0',
+			fraction: '',
+		}
+		this.whole = React.createRef()
+		this.fraction = React.createRef()
+		this.numberRegex = /^\d+\.?$/g
 	}
+	componentDidMount() {
+		this.whole.current.focus()
+	}
+	handleWhole = e => {
+		const {value: fuck} = e.target
+		const value = fuck.trim()
+		if (value === '') {
+			return this.setState({whole: '0'})
+		}
+		if (!value.match(this.numberRegex)) {
+			console.log('no match', {value})
+			return
+		}
+		if (value.indexOf('.') !== -1) {
+			return this.fraction.current.focus()
+		}
 
-	handleChange = e => {
-		const {name, value} = e.target
-		const trimmed = parseInt(value).toString()
-		this.setState({digits: trimmed})
+		console.log('down here', {value})
+		let fixed = value
+		if (fixed.length > 1) {
+			if (fixed.charAt(0) === '0') {
+				fixed = fixed.substr(1)
+			}
+		}
+
+		this.setState({whole: fixed})
+	}
+	handleFraction = e => {
+		const {value} = e.target
+		this.setState({fraction: value})
 	}
 	render() {
-		const {digits} = this.state
-		const value = parseInt(digits) || 0
-		const money = Dinero({amount: value}).toFormat('$0,0.00')
-		console.log('render', {
-			digits,
-			value,
-			money,
-		})
+		const {whole, fraction} = this.state
 		return (
-			<div className="App">
-				<h1>Hello CodeSandbox</h1>
-
-				{/*<span className="container">
-					<label>$ &nbsp;</label>
-					<input
-						className="dollars"
-						onChange={this.handleChange}
-						value={dollars}
-						name="dollars"
-						type="number"
-						step="1"
-						min="0"
-					/>
-				</span>*/}
-
-				<div className="box">
-					{/*<label>&nbsp;.&nbsp;</label>*/}
-					<div className="money">{money}</div>
-					<input
-						className="cents"
-						dir="rtl"
-						onChange={this.handleChange}
-						value={value || ''}
-						name="cents"
-						type="number"
-						step="1"
-						min="0"
-						max="99"
-					/>
+			<div
+				className="App"
+				style={{
+					display: 'flex',
+					flexDirection: 'column',
+					justifyContent: 'center',
+					alignItems: 'center',
+				}}>
+				<div>
+					<h1>&nbsp;</h1>
+					<label htmlFor="whole">Amount</label>
+					<div style={{display: 'flex'}}>
+						<span>$</span>
+						<input
+							type="tel"
+							placeholder="0"
+							name="whole"
+							id="whole"
+							ref={this.whole}
+							value={whole}
+							onChange={this.handleWhole}
+						/>
+						<input
+							type="tel"
+							placeholder="00"
+							name="fraction"
+							id="fraction"
+							value={fraction}
+							ref={this.fraction}
+							onChange={this.handleFraction}
+						/>
+					</div>
 				</div>
 			</div>
 		)
