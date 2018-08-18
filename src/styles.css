@@ -1,9 +1,39 @@
+html {
+	box-sizing: border-box;
+}
+*,
+*:before,
+*:after {
+	box-sizing: inherit;
+}
+
 .App {
 	font-family: sans-serif;
 }
 
 .box {
-	position: relative;
-	width: 8.5em;
-	height: 1.5em;
+	display: flex;
+	justify-content: flex-end;
+	max-width: 100%;
+}
+
+.sign {
+}
+
+.whole {
+	font-size: 2em;
+	text-align: right;
+	display: inline-flex;
+	padding: 0;
+	max-width: 5em;
+	border: none;
+	border-bottom: 1px solid black;
+	margin-right: 0.5em;
+}
+.fraction {
+	max-width: 2em;
+	display: inline-flex;
+	font-size: 1.4em;
+	border: none;
+	border-bottom: 1px solid black;
 }

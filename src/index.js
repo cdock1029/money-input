@@ -22,32 +22,34 @@ class App extends React.Component {
 		}
 		this.whole = React.createRef()
 		this.fraction = React.createRef()
-		this.wholeRegex = /^\d+\.?$/
+		this.wholeRegex = /^\d+\.?\d{0,2}$/
 		this.fractionRegex = /^\d{1,2}$/
-	}
-	componentDidMount() {
-		this.whole.current.focus()
 	}
 	handleWhole = e => {
 		let {value} = e.target
+		// undo Dinero
+		value = value.toString().replace(/[, ]/g, '')
 		if (value === '') {
 			return this.setState({whole: '0'})
 		}
-		// undo Dinero
-		value = value.toString().replace(',', '')
 
 		if (!value.match(this.wholeRegex)) {
 			console.log('no match', {value})
 			return
 		}
 
-		if (value.charAt(value.length - 1) === '.') {
-			const chopped = value.substr(0, value.length - 1)
-			const money = to$(chopped)
-
-			return this.setState({whole: money}, () => {
-				this.fraction.current.focus()
-			})
+		if (value.indexOf('.') !== -1) {
+			const parts = value.split('.')
+			const money = to$(parts[0])
+			return this.setState(
+				({fraction}) => ({
+					whole: money,
+					fraction: parts.length > 1 ? parts[1] : fraction,
+				}),
+				() => {
+					this.fraction.current.focus()
+				}
+			)
 		}
 
 		console.log('down here', {value})
@@ -60,10 +62,11 @@ class App extends React.Component {
 		const money = to$(fixed)
 		console.log({fixed, money})
 		this.setState({whole: money})
+		//
 	}
 	handleFraction = e => {
 		const {value} = e.target
-		console.log({fraction: value})
+		// console.log({fraction: value})
 		if (value.trim() === '') {
 			return this.setState({fraction: value.trim()}, () => {
 				this.whole.current.focus()
@@ -74,9 +77,14 @@ class App extends React.Component {
 		}
 		this.setState({fraction: value})
 	}
+	fractionKeyDown = e => {
+		const {value} = this.fraction.current
+		if (value === '' && e.keyCode === 8) {
+			this.whole.current.focus()
+		}
+	}
 	render() {
 		const {whole, fraction} = this.state
-		console.log({whole, fraction})
 		const money = to$(whole.replace(',', ''), fraction, PRETTY)
 		return (
 			<div
@@ -90,24 +98,28 @@ class App extends React.Component {
 				<div>
 					<h1>{money}</h1>
 					<label htmlFor="whole">Amount</label>
-					<div style={{display: 'flex'}}>
-						<span>$</span>
+					<div className="box">
+						<span className="sign">$</span>
 						<input
+							className="whole"
 							type="tel"
 							placeholder="0"
 							name="whole"
 							id="whole"
 							ref={this.whole}
 							value={whole}
+							autoFocus
 							onChange={this.handleWhole}
 						/>
 						<input
+							className="fraction"
 							type="tel"
 							placeholder="00"
 							name="fraction"
 							id="fraction"
 							value={fraction}
 							ref={this.fraction}
+							onKeyDown={this.fractionKeyDown}
 							onChange={this.handleFraction}
 						/>
 					</div>
