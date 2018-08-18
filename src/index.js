@@ -4,6 +4,14 @@ import Dinero from 'dinero.js/build/esm/dinero.js'
 import './styles.css'
 
 Dinero.globalLocale = 'en-US'
+const FORMAT = '0,0'
+const PRETTY = '$0,0.00'
+
+function to$(whole, fraction = '0', fmt = FORMAT) {
+	return Dinero({
+		amount: 100 * parseInt(whole || '0') + parseInt(fraction || '0'),
+	}).toFormat(fmt)
+}
 
 class App extends React.Component {
 	constructor(props) {
@@ -14,23 +22,32 @@ class App extends React.Component {
 		}
 		this.whole = React.createRef()
 		this.fraction = React.createRef()
-		this.numberRegex = /^\d+\.?$/g
+		this.wholeRegex = /^\d+\.?$/
+		this.fractionRegex = /^\d{1,2}$/
 	}
 	componentDidMount() {
 		this.whole.current.focus()
 	}
 	handleWhole = e => {
-		const {value: fuck} = e.target
-		const value = fuck.trim()
+		let {value} = e.target
 		if (value === '') {
 			return this.setState({whole: '0'})
 		}
-		if (!value.match(this.numberRegex)) {
+		// undo Dinero
+		value = value.toString().replace(',', '')
+
+		if (!value.match(this.wholeRegex)) {
 			console.log('no match', {value})
 			return
 		}
-		if (value.indexOf('.') !== -1) {
-			return this.fraction.current.focus()
+
+		if (value.charAt(value.length - 1) === '.') {
+			const chopped = value.substr(0, value.length - 1)
+			const money = to$(chopped)
+
+			return this.setState({whole: money}, () => {
+				this.fraction.current.focus()
+			})
 		}
 
 		console.log('down here', {value})
@@ -40,15 +57,27 @@ class App extends React.Component {
 				fixed = fixed.substr(1)
 			}
 		}
-
-		this.setState({whole: fixed})
+		const money = to$(fixed)
+		console.log({fixed, money})
+		this.setState({whole: money})
 	}
 	handleFraction = e => {
 		const {value} = e.target
+		console.log({fraction: value})
+		if (value.trim() === '') {
+			return this.setState({fraction: value.trim()}, () => {
+				this.whole.current.focus()
+			})
+		}
+		if (!value.match(this.fractionRegex)) {
+			return
+		}
 		this.setState({fraction: value})
 	}
 	render() {
 		const {whole, fraction} = this.state
+		console.log({whole, fraction})
+		const money = to$(whole.replace(',', ''), fraction, PRETTY)
 		return (
 			<div
 				className="App"
@@ -59,7 +88,7 @@ class App extends React.Component {
 					alignItems: 'center',
 				}}>
 				<div>
-					<h1>&nbsp;</h1>
+					<h1>{money}</h1>
 					<label htmlFor="whole">Amount</label>
 					<div style={{display: 'flex'}}>
 						<span>$</span>

@@ -7,31 +7,3 @@
 	width: 8.5em;
 	height: 1.5em;
 }
-.cents {
-	position: absolute;
-	top: 0;
-	left: 0;
-	right: 0;
-	bottom: 0;
-	width: 100%;
-	height: 100%;
-
-	color: transparent;
-	/* text-shadow: 0 0 0 black;*/
-	text-align: center;
-	opacity: 0;
-
-	/*&:focus {
-		outline: none;
-	}*/
-}
-.money {
-	position: absolute;
-	top: 0;
-	left: 0;
-	right: 0;
-	bottom: 0;
-	width: 100%;
-	height: 100%;
-	border: 1px solid black;
-}
